@@ -2,7 +2,7 @@
 
 ## Overview
 
-Provides simple way to publish our apk file to Google Play using the Google Play Developer Publishing API.
+Provides simple way to publish your apk file to Google Play using the Google Play Developer Publishing API.
 
 ## Usage
 ```java -jar -n "your_app_name" -p "your_app_package_name" -a "your_service_account" -k "p12_key_file_path" -apk "apk_ile_path" -t "track"```
