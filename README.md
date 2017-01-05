@@ -15,12 +15,12 @@ Provides simple way to publish our apk file to Google Play using the Google Play
 - `-apk` - The apk file path of the apk to upload.
 - `-t`, `-track` - The track for uploading the apk, can be "alpha", "beta", "production" or "rollout".
 
+## Build
+`./gradlew shadowJar`
+
 ## Used Library:
   - [Google Play Developer API client library](https://developers.google.com/android-publisher/libraries)
   - [JCommander](https://github.com/cbeust/jcommander)
-## Build
-
-`./gradlew shadowJar`
 
 License
 =======
