@@ -1,0 +1,35 @@
+group 'com.drextended.gppublisher'
+version '1.0'
+
+apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'com.github.johnrengelman.shadow'
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+mainClassName = "com.drextended.gppublisher.Main"
+
+shadowJar {
+    destinationDir = file("$rootDir/out/")
+    baseName = 'gppublisher'
+    classifier = null
+    version = null
+}
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.4'
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile "com.beust:jcommander:1.48"
+}
