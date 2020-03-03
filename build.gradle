@@ -1,6 +1,23 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.github.jengelman.gradle.plugins:shadow:5.2.0'
+    }
+}
+
+plugins {
+    id 'com.github.johnrengelman.shadow' version '5.2.0'
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+}
+
 group 'com.drextended.gppublisher'
 version '1.0'
-
 apply plugin: 'java'
 apply plugin: 'application'
 apply plugin: 'com.github.johnrengelman.shadow'
@@ -16,20 +33,17 @@ shadowJar {
     version = null
 }
 
-buildscript {
-    repositories {
-        jcenter()
-    }
-    dependencies {
-        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.4'
-    }
-}
 
-repositories {
-    mavenCentral()
-}
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile "com.beust:jcommander:1.48"
+    //implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation "com.beust:jcommander:1.48"
+
+    implementation "com.google.apis:google-api-services-androidpublisher:v3-rev103-1.25.0"
+    implementation "com.google.oauth-client:google-oauth-client-java6:1.25.0"
+    implementation "com.google.oauth-client:google-oauth-client-jetty:1.25.0"
+    implementation "javax.inject:javax.inject:1"
+    implementation "javax.ws.rs:jsr311-api:1.1.1"
+    implementation 'com.google.code.gson:gson:2.8.6'
+    implementation 'commons-io:commons-io:2.5'
 }
