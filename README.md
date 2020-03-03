@@ -5,7 +5,7 @@
 Provides simple way to upload your apk file on Google Play using the Google Play Developer Publishing API.
 
 ## Usage
-```java -jar gppublisher.jar -n "your_app_name" -p "your_app_package_name" -a "your_service_account" -k "p12_key_file_path" -apk "apk_ile_path" -t "track"```
+```java -jar gppublisher.jar -n "MyCompany-Application/1.0" -p "com.example.MyApp" -k "./key.json" -apk "./apk.apk" -t "internal,alpha,custom"```
 
 ## Options
 The following options are required: -sa, -serviceAccountEmail -n, -appName -T, -tracks -t, -track -k, -jsonKey -p, -packageName -a, -apk, -aab 

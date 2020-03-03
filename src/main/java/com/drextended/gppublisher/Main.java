@@ -9,8 +9,6 @@ import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.security.GeneralSecurityException;
 import java.util.List;
 
@@ -115,14 +113,9 @@ public class Main {
 
         public transient boolean useJsonKeyAsFile;
 
-        public void prepare() throws ParameterException {
-            try {
-                URI uri = Main.class.getProtectionDomain().getCodeSource().getLocation().toURI();
-                workingDir = new File(uri);
-                useJsonKeyAsFile = jsonKey != null && !jsonKey.trim().startsWith("{");
-            } catch (URISyntaxException e) {
-                throw new ParameterException("Invalid working directory");
-            }
+        public void prepare() {
+            workingDir = new File(System.getProperty("user.dir"));
+            useJsonKeyAsFile = jsonKey != null && !jsonKey.trim().startsWith("{");
         }
     }
 }
