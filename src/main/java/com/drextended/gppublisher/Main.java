@@ -46,32 +46,30 @@ public class Main {
                     config.workingDir,
                     config.applicationName,
                     config.packageName,
-                    config.useJsonKeyInFile,
-                    config.jsonKeyPath,
-                    config.jsonKeyContent,
+                    config.useJsonKeyAsFile,
+                    config.jsonKey,
                     config.artifactPath,
                     config.deobfuscationFilePath,
                     config.listings,
-                    config.track,
-                    config.rolloutFraction,
-                    config.trackCustoms
+                    config.tracks,
+                    config.rolloutFraction
             );
             helper.init();
             helper.makeInsertRequest();
 
-            logger.info(
-                    "\n=============================================\n" +
-                            "=             !!! PUBLISHED !!!             =\n" +
-                            "=============================================\n"
+            logger.info("\n=============================================\n" +
+                    "=             !!! PUBLISHED !!!             =\n" +
+                    "=============================================\n"
             );
         } catch (IOException | GeneralSecurityException e) {
-            logger.error("Exception was thrown while uploading apk to " + config.track + " track", e);
+            logger.error("Exception was thrown while uploading apk", e);
         }
 
     }
 
     private static class ConfigArgs {
 
+        @SuppressWarnings("unused")
         @Parameter
         public List<String> parameters = Lists.newArrayList();
 
@@ -86,53 +84,43 @@ public class Main {
         @Parameter(names = {"-p", "-packageName"}, required = true, description = "The package name of the app")
         public String packageName;
 
-        @Parameter(names = {"-sa", "-serviceAccountEmail"}, required = true, description = "The service account email")
-        public String serviceAccountEmail;
-
-        @Parameter(names = {"-k", "-jsonKey"}, required = false, description = "The service account key.json file path. Required unless you specify -jsonKeyContent param")
-        public String jsonKeyPath;
-
-        @Parameter(names = {"-ks", "-jsonKeyContent"}, required = false, description = "The service account key.json file content as text")
-        public String jsonKeyContent;
+        @Parameter(names = {"-k", "-jsonKey"}, required = true, description = "The service account key.json file path or file content as text")
+        public String jsonKey;
 
         @Parameter(names = {"-a", "-apk", "-aab"}, required = true, description = "The file path to the apk/aab artifact")
         public String artifactPath;
 
-        @Parameter(names = {"-df", "-deobfuscationFile"}, required = false, description = "The file path to the deobfuscation file of the specified apk/aab")
+        @Parameter(names = {"-df", "-deobfuscation"}, description = "The file path to the deobfuscation file of the specified apk/aab")
         public String deobfuscationFilePath;
 
         @Parameter(
                 names = {"-l", "-listings"},
-                required = false,
                 description = "The file path to recent changes in format: [BCP47 Language Code]:[recent changes file path]. " +
                         "Multiple listing thought comma. Sample: en-US:C:\\temp\\listing_en.txt"
         )
         public String listings;
 
-        @Parameter(names = {"-T", "-tracks"}, required = true, description = "Comma separated track names")
-        public String trackCustoms;
+        @Parameter(
+                names = {"-t", "-tracks"},
+                required = true,
+                variableArity = true,
+                description = "Comma separated track names for assigning artifact, can be \"internal\", \"alpha\", \"beta\", \"production\", \"rollout\", \"none\" or any custom" )
+        public List<String> tracks;
 
-        @Parameter(names = {"-t", "-track"}, required = true, description = "The single track for uploading the apk, can be \"internal\", \"alpha\", \"beta\", \"production\" or \"rollout\"")
-        public String track;
-
-        @Parameter(names = {"-fraction"}, required = true, description = "The rollout fraction")
-        public String rolloutFraction;
+        @Parameter(names = {"-fraction"}, description = "The rollout fraction. Acceptable values are 0.05, 0.1, 0.2, and 0.5")
+        public Double rolloutFraction;
 
         public transient File workingDir;
 
-        public transient boolean useJsonKeyInFile;
+        public transient boolean useJsonKeyAsFile;
 
         public void prepare() throws ParameterException {
             try {
                 URI uri = Main.class.getProtectionDomain().getCodeSource().getLocation().toURI();
                 workingDir = new File(uri);
-                useJsonKeyInFile = jsonKeyPath != null && !jsonKeyPath.isEmpty();
+                useJsonKeyAsFile = jsonKey != null && !jsonKey.trim().startsWith("{");
             } catch (URISyntaxException e) {
                 throw new ParameterException("Invalid working directory");
-            }
-
-            if (jsonKeyPath == null && jsonKeyContent == null) {
-                throw new ParameterException("Required parameter missing: you should specify -jsonKey or -jsonKeyContent");
             }
         }
     }

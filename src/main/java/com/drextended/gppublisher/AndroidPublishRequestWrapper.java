@@ -36,9 +36,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Helper class to initialize the publisher APIs client library.
@@ -55,12 +53,11 @@ public class AndroidPublishRequestWrapper {
     static final String MIME_TYPE_APK = "application/vnd.android.package-archive";
     static final String MIME_TYPE_OCTET_STREAM = "application/octet-stream";
     public static final String TRACK_NONE = "none";
-    public static final String TRACK_INTERNAL = "internal";
-    public static final String TRACK_ALPHA = "alpha";
-    public static final String TRACK_BETA = "beta";
-    public static final String TRACK_PRODUCTION = "production";
+    //    public static final String TRACK_INTERNAL = "internal";
+//    public static final String TRACK_ALPHA = "alpha";
+//    public static final String TRACK_BETA = "beta";
+//    public static final String TRACK_PRODUCTION = "production";
     public static final String TRACK_ROLLOUT = "rollout";
-    public static final String TRACK_CUSTOM = "custom";
 
     private final File mWorkingDirectory;
     private final String mApplicationName;
@@ -71,87 +68,70 @@ public class AndroidPublishRequestWrapper {
     private final String mApkPath;
     private final String mDeobfuscationFilePath;
     private final String mRecentChangesListings;
-    private final String mTrack;
-    private final String mRolloutFractionString;
-    private String mTrackCustomNames;
+    private final Set<String> mTracks;
 
     private AndroidPublisher mAndroidPublisher;
     private File mApkFile;
     private File mDeobfuscationFile;
     private List<LocalizedText> mReleaseNotes;
     private Double mRolloutFraction;
-    private String[] mCustomTracks;
 
     /**
-     * @param workingDirectory
-     * @param applicationName       The name of your application. If the application name is
+     * @param workingDirectory      current Working Directory
+     * @param applicationName       the name of your application. If the application name is
      *                              {@code null} or blank, the application will log a warning. Suggested
      *                              format is "MyCompany-Application/1.0".
      * @param packageName           the package name of the app
-     * @param findJsonKeyInFile
-     * @param jsonKeyPath           the service account secret json file path
+     * @param findJsonKeyInFile     true if jsonKey contains path to file
+     * @param jsonKey               the service account secret json file path
      * @param apkPath               the apk/aab file path of the apk/aab to upload
      * @param deobfuscationFilePath the deobfuscation file of the specified APK/AAB
      * @param recentChangesListings the recent changes in format: [BCP47 Language Code]:[recent changes file path].
      *                              Multiple listing thought comma. Sample: en-US:C:\temp\listing_en.txt
-     * @param track                 The track for uploading the apk, can be 'internal', 'alpha', beta', 'production' or 'rollout'
-     * @param rolloutFraction       The rollout fraction
-     * @param trackCustomNames      Comma separated track names for `custom` track
+     * @param tracks                the tracks for uploading the apk/aab artifact, can be 'internal', 'alpha', beta', 'production', 'rollout', 'none' or any custom
+     * @param rolloutFraction       the rollout fraction. Acceptable values are 0.05, 0.1, 0.2, and 0.5
      */
     public AndroidPublishRequestWrapper(
             File workingDirectory,
             String applicationName,
             String packageName,
             boolean findJsonKeyInFile,
-            String jsonKeyPath,
-            String jsonKeyContent,
+            String jsonKey,
             String apkPath,
             String deobfuscationFilePath,
             String recentChangesListings,
-            String track,
-            String rolloutFraction,
-            String trackCustomNames
+            List<String> tracks,
+            Double rolloutFraction
     ) {
         mWorkingDirectory = workingDirectory;
         mApplicationName = applicationName;
         mPackageName = packageName;
         mFindJsonKeyInFile = findJsonKeyInFile;
-        mJsonKeyPath = jsonKeyPath;
-        mJsonKeyContent = jsonKeyContent;
+        mJsonKeyPath = findJsonKeyInFile ? jsonKey : null;
+        mJsonKeyContent = findJsonKeyInFile ? null : jsonKey;
         mApkPath = apkPath;
         mDeobfuscationFilePath = deobfuscationFilePath;
         mRecentChangesListings = recentChangesListings;
-        mTrack = track;
-        mRolloutFractionString = rolloutFraction;
-        mTrackCustomNames = trackCustomNames;
+        mTracks = tracks == null ? null : new HashSet<>(tracks);
+        mRolloutFraction = rolloutFraction;
     }
 
     /**
      * Performs all necessary setup steps for running requests against the API.
      *
-     * @throws GeneralSecurityException
-     * @throws IOException
-     * @throws IllegalArgumentException
+     * @throws GeneralSecurityException some security exception :(
+     * @throws IOException              file reading or transmitting exception
+     * @throws IllegalArgumentException illegal argument passed
      */
     public void init() throws IOException, GeneralSecurityException, IllegalArgumentException {
         logger.info("Initializing...");
         Preconditions.checkArgument(!Strings.isNullOrEmpty(mApplicationName), "Application name cannot be null or empty!");
         Preconditions.checkArgument(!Strings.isNullOrEmpty(mPackageName), "Package name cannot be null or empty!");
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(mTrack), "Track cannot be null or empty!");
+        Preconditions.checkArgument(mTracks != null && !mTracks.isEmpty(), "Track cannot be null or empty!");
         Preconditions.checkArgument(!Strings.isNullOrEmpty(mApkPath), "Apk/aab path cannot be null or empty!");
 
-        if (TRACK_ROLLOUT.equals(mTrack)) {
-            try {
-                mRolloutFraction = Double.parseDouble(mRolloutFractionString);
-            } catch (NumberFormatException ex) {
-                throw new IllegalArgumentException("User fraction cannot be parsed as double: " + mRolloutFractionString);
-            }
-            if (mRolloutFraction < 0 || mRolloutFraction >= 1) {
-                throw new IllegalArgumentException("User fraction must be in range (0 <= fraction < 1): " + mRolloutFractionString);
-            }
-        } else if (TRACK_CUSTOM.equals(mTrack)) {
-            Preconditions.checkArgument(!Strings.isNullOrEmpty(mTrackCustomNames), "Not specified names for custom tracks!");
-            mCustomTracks = mTrackCustomNames.split(",\\s*");
+        if (mTracks.contains(TRACK_ROLLOUT) && (mRolloutFraction < 0 || mRolloutFraction >= 1)) {
+            throw new IllegalArgumentException("User fraction must be in range (0 <= fraction < 1) but set " + mRolloutFraction);
         }
 
         String apkFullPath = relativeToFullPath(mApkPath);
@@ -177,7 +157,7 @@ public class AndroidPublishRequestWrapper {
 
         if (!Strings.isNullOrEmpty(mRecentChangesListings)) {
             String[] rcParts = mRecentChangesListings.trim().split("\\s*,\\s*");
-            mReleaseNotes = new ArrayList<LocalizedText>(rcParts.length);
+            mReleaseNotes = new ArrayList<>(rcParts.length);
             for (String rcPart : rcParts) {
                 String[] rcPieces = rcPart.split("\\s*::\\s*");
 
@@ -192,17 +172,10 @@ public class AndroidPublishRequestWrapper {
                 Preconditions.checkArgument(rcFile.exists(),
                         "Recent changes file for language \"" + languageCode + "\" not found in path: " + recentChangesFilePath);
 
-                FileInputStream inputStream = new FileInputStream(rcFile);
-                String recentChanges = null;
-                try {
-                    recentChanges = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
-                } finally {
-                    inputStream.close();
+                try (FileInputStream inputStream = new FileInputStream(rcFile)) {
+                    String recentChanges = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+                    mReleaseNotes.add(new LocalizedText().setLanguage(languageCode).setText(recentChanges));
                 }
-
-                mReleaseNotes.add(
-                        new LocalizedText().setLanguage(languageCode).setText(recentChanges)
-                );
             }
         }
         logger.info("Initialized successfully!");
@@ -228,11 +201,10 @@ public class AndroidPublishRequestWrapper {
     /**
      * Publishes apk file on Google Play
      *
-     * @throws IOException
-     * @throws GeneralSecurityException
-     * @throws IllegalArgumentException
+     * @throws IOException              some IO Exception
+     * @throws IllegalArgumentException illegal argument passed
      */
-    public void makeInsertRequest() throws IOException, GeneralSecurityException, IllegalArgumentException {
+    public void makeInsertRequest() throws IOException, IllegalArgumentException {
         Preconditions.checkArgument(mApkFile != null && mApkFile.exists(), "Apk file not found in path: " + mApkPath);
 
         logger.info("Creating a new edit session...");
@@ -275,14 +247,16 @@ public class AndroidPublishRequestWrapper {
             logger.info("Mapping has been uploaded!");
         }
 
-        if (TRACK_NONE.equals(mTrack)) {
-            logger.info("Track was not set, so apk will not be assigned to any track...");
-        } else if (TRACK_CUSTOM.equals(mTrack)) {
-            for (String customTrack : mCustomTracks) {
-                assignToTrack(edits, editId, apkVersionCode, customTrack);
+        for (String track : mTracks) {
+
+            if (TRACK_NONE.equals(track)) {
+                if (mTracks.size() == 1) {
+                    logger.info("Track set as 'none', so apk will not be assigned to any track...");
+                    break;
+                }
+            } else {
+                assignToTrack(edits, editId, apkVersionCode, track);
             }
-        } else {
-            assignToTrack(edits, editId, apkVersionCode, mTrack);
         }
         logger.info("Committing changes for edit...");
         AppEdit appEdit = edits.commit(mPackageName, editId)
@@ -299,11 +273,10 @@ public class AndroidPublishRequestWrapper {
                 .setReleaseNotes(mReleaseNotes);
 
         if (TRACK_ROLLOUT.equals(trackName)) {
-            release = release
-                    .setUserFraction(mRolloutFraction)
+            release.setUserFraction(mRolloutFraction)
                     .setStatus("inProgress");
         } else {
-            release = release.setStatus("completed");
+            release.setStatus("completed");
         }
 
         Track trackContent = new Track()
