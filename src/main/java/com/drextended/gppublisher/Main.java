@@ -102,9 +102,10 @@ public class Main {
 
         @Parameter(
                 names = {"-t", "-tracks"},
-                required = true,
                 variableArity = true,
-                description = "Comma separated track names for assigning artifact, can be \"internal\", \"alpha\", \"beta\", \"production\", \"rollout\", \"none\" or any custom" )
+                description = "Comma separated track names for assigning artifact. " +
+                        "Can be \"internal\", \"alpha\", \"beta\", \"production\", \"rollout\" or any custom. " +
+                        "If not set - artifact will not be assigned to any tracks." )
         public List<String> tracks;
 
         @Parameter(names = {"-fraction"}, description = "The rollout fraction. Acceptable values are 0.05, 0.1, 0.2, and 0.5")

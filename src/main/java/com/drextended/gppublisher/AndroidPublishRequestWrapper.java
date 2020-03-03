@@ -52,7 +52,6 @@ public class AndroidPublishRequestWrapper {
 
     static final String MIME_TYPE_APK = "application/vnd.android.package-archive";
     static final String MIME_TYPE_OCTET_STREAM = "application/octet-stream";
-    public static final String TRACK_NONE = "none";
     //    public static final String TRACK_INTERNAL = "internal";
 //    public static final String TRACK_ALPHA = "alpha";
 //    public static final String TRACK_BETA = "beta";
@@ -88,7 +87,9 @@ public class AndroidPublishRequestWrapper {
      * @param deobfuscationFilePath the deobfuscation file of the specified APK/AAB
      * @param recentChangesListings the recent changes in format: [BCP47 Language Code]:[recent changes file path].
      *                              Multiple listing thought comma. Sample: en-US:C:\temp\listing_en.txt
-     * @param tracks                the tracks for uploading the apk/aab artifact, can be 'internal', 'alpha', beta', 'production', 'rollout', 'none' or any custom
+     * @param tracks                the tracks for uploading the apk/aab artifact.
+     *                              Can be 'internal', 'alpha', beta', 'production', 'rollout', or any custom.
+     *                              If not set - artifact will not be assigned to any tracks
      * @param rolloutFraction       the rollout fraction. Acceptable values are 0.05, 0.1, 0.2, and 0.5
      */
     public AndroidPublishRequestWrapper(
@@ -247,14 +248,10 @@ public class AndroidPublishRequestWrapper {
             logger.info("Mapping has been uploaded!");
         }
 
-        for (String track : mTracks) {
-
-            if (TRACK_NONE.equals(track)) {
-                if (mTracks.size() == 1) {
-                    logger.info("Track set as 'none', so apk will not be assigned to any track...");
-                    break;
-                }
-            } else {
+        if (mTracks == null || mTracks.isEmpty()) {
+            logger.info("Track set as 'none', so apk will not be assigned to any track...");
+        } else {
+            for (String track : mTracks) {
                 assignToTrack(edits, editId, apkVersionCode, track);
             }
         }

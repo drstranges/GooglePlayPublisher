@@ -8,25 +8,19 @@ Provides simple way to upload your apk file on Google Play using the Google Play
 ```java -jar gppublisher.jar -n "your_app_name" -p "your_app_package_name" -a "your_service_account" -k "p12_key_file_path" -apk "apk_ile_path" -t "track"```
 
 ## Options
-- `-n`, `-applicationName` - The name of your application. If the application name is null or blank, the application will log a warning. Suggested format is "MyCompany-Application/1.0".
-- `-p`, `-packageName` - The package name of the app.
-- `-a`, `-serviceAccountEmail` - The service account email.
-- `-k`, `-p12KeyPath` - The service account key.p12 file path.
-- `-apk` - The apk file path of the apk to upload.
-- `-t`, `-track` - The track for uploading the apk, can be "alpha", "beta", "production" or "rollout".
-
 The following options are required: -sa, -serviceAccountEmail -n, -appName -T, -tracks -t, -track -k, -jsonKey -p, -packageName -a, -apk, -aab 
-- * `-a`, `-apk`, `-aab`  - The file path to the apk/aab artifact
-- * `-n`, `-appName`      - The name of your application. Suggested format is "MyCompany-Application/1.0".
-- * `-k`, `-jsonKey`      - The service account key.json file path or file content as text
-- * `-p`, `-packageName`  - The package name of the app
-- * `-t`, `-tracks`       - Comma separated track names for assigning artifact, can be "internal", "alpha", "beta", "production", "rollout", "none" or any custom
-- `-l`, `-listings`       - The file path to recent changes in format: \[BCP47 Language Code\]:\[recentchanges file path\].
-                            Multiple listing thought comma. Sample: `en-US:C:\temp\listing_en.txt`
-- `-fraction`             - The rollout fraction. Acceptable values are 0.05, 0.1, 0.2, and 0.5
-- `-df`, `-deobfuscation` - The file path to the deobfuscation file
-- `-help`                 - Print usage
-
+- \* `-a`, `-apk`, `-aab`  - The file path to the apk/aab artifact.
+- \* `-n`, `-appName`      - The name of your application. Suggested format is "MyCompany-Application/1.0".
+- \* `-k`, `-jsonKey`      - The service account key.json file path or file content as text.
+- \* `-p`, `-packageName`  - The package name of the app.
+- \* `-t`, `-tracks`       - Comma separated track names for assigning artifact.
+                             Can be "internal", "alpha", "beta", "production", "rollout", or any custom.
+                             If not set - artifact will not be assigned to any tracks.
+- `-l`, `-listings`        - The file path to recent changes in format: \[BCP47 Language Code\]:\[recentchanges file path\].
+                             Multiple listing thought comma. Sample: `en-US:C:\temp\listing_en.txt`.
+- `-fraction`              - The rollout fraction. Acceptable values are 0.05, 0.1, 0.2, and 0.5.
+- `-df`, `-deobfuscation`  - The file path to the deobfuscation file.
+- `-help`                  - Print usage.
 
 ## Build
 `./gradlew shadowJar`
