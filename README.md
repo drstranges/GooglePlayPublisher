@@ -29,6 +29,11 @@ The following options are required: -sa, -serviceAccountEmail -n, -appName -T, -
   - [Google Play Developer API client library](https://developers.google.com/android-publisher/libraries)
   - [JCommander](https://github.com/cbeust/jcommander)
 
+
+## Contribution
+Every contribution is welcome!  
+If you have any ideas or feature requests, don't hesitate to reach out to me 😉
+
 License
 =======
 
