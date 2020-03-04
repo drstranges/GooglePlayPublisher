@@ -30,7 +30,7 @@ shadowJar {
     destinationDir = file("$rootDir/out/")
     baseName = 'gppublisher'
     classifier = null
-    version = null
+    version = "v1"
 }
 
 

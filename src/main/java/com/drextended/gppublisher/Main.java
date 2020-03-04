@@ -60,7 +60,7 @@ public class Main {
                     "=============================================\n"
             );
         } catch (IOException | GeneralSecurityException e) {
-            logger.error("Exception was thrown while uploading apk", e);
+            throw new RuntimeException("Exception was thrown while uploading apk", e);
         }
 
     }
